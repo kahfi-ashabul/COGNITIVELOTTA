@@ -1,0 +1,1818 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kei — Cognitive & Speed Lab</title>
+    <meta name="description" content="Kei — Cognitive & Speed Lab. Train your brain with the Pauli Test, Reflex Test, Number Memory, and Typing Speed. Compete in real-time multiplayer battles and climb the ELO leaderboard." />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              cyber: '#0B0B0F',
+              'cyber-light': '#FFFFFF',
+              panel: '#13131A',
+              'panel-2': '#1E1E28',
+              accent: '#A855F7',
+              'accent-light': '#C084FC',
+              'accent-dark': '#7C3AED',
+              success: '#22C55E',
+              warning: '#F59E0B',
+              error: '#EF4444',
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            animation: {
+              'glow-pulse': 'glowPulse 2s ease-in-out infinite',
+              'fade-in': 'fadeIn 0.3s ease-out',
+              'slide-up': 'slideUp 0.3s ease-out',
+              'countdown': 'countdown 1s ease-in-out',
+            },
+            keyframes: {
+              glowPulse: {
+                '0%,100%': { textShadow: '0 0 10px rgba(168,85,247,0.5), 0 0 20px rgba(168,85,247,0.3)' },
+                '50%': { textShadow: '0 0 20px rgba(168,85,247,0.8), 0 0 40px rgba(168,85,247,0.5)' },
+              },
+              fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+              slideUp: { from: { opacity: 0, transform: 'translateY(20px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
+              countdown: { '0%': { transform: 'scale(2)', opacity: 0 }, '50%': { transform: 'scale(1)', opacity: 1 }, '100%': { transform: 'scale(0.5)', opacity: 0 } },
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      :root { color-scheme: dark; }
+      html.light { color-scheme: light; }
+      body { font-family: 'Inter', system-ui, sans-serif; }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #0B0B0F; }
+      ::-webkit-scrollbar-thumb { background: #A855F7; border-radius: 4px; }
+      .glass { backdrop-filter: blur(12px); }
+      .accent-glow { text-shadow: 0 0 20px rgba(168,85,247,0.6), 0 0 40px rgba(168,85,247,0.3); }
+      .card-hover { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+      .card-hover:hover { transform: translateY(-4px); box-shadow: 0 0 30px rgba(168,85,247,0.2); border-color: #A855F7; }
+      .key-btn { transition: all 0.1s ease; user-select: none; }
+      .key-btn:active { transform: scale(0.92); background: #A855F7 !important; color: white !important; }
+      .ad-placeholder { border: 2px dashed rgba(168,85,247,0.3); background: rgba(168,85,247,0.05); display: flex; align-items: center; justify-content: center; color: rgba(168,85,247,0.4); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+      .typing-char { transition: color 0.1s, background 0.1s; }
+      .typing-char.correct { color: #22C55E; }
+      .typing-char.incorrect { color: #EF4444; background: rgba(239,68,68,0.1); }
+      .typing-char.current { background: rgba(168,85,247,0.3); border-bottom: 2px solid #A855F7; }
+      .progress-bar-fill { transition: width 0.3s ease; }
+      .modal-overlay { animation: fadeIn 0.2s ease-out; }
+      .modal-content { animation: slideUp 0.3s ease-out; }
+      @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+      @keyframes slideUp { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: translateY(0) } }
+      .light body { background: #F5F5F7; }
+      html.light { background: #F5F5F7; }
+      html.light .bg-cyber { background: #F5F5F7 !important; }
+      html.light .bg-panel { background: #FFFFFF !important; border-color: #E0E0E0 !important; }
+      html.light .bg-panel-2 { background: #F9F9FB !important; border-color: #E0E0E0 !important; }
+      html.light .text-white { color: #1A1A2E !important; }
+      html.light .text-gray-400 { color: #666 !important; }
+      html.light .border-purple-500\/20 { border-color: #A855F7 !important; }
+    </style>
+  </head>
+  <body class="bg-cyber text-white min-h-screen">
+    <div id="app">
+      <!-- ============ LOGIN MODAL ============ -->
+      <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
+        <div class="modal-content bg-panel border border-purple-500/20 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+          <div class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold accent-glow text-accent mb-2">Kei</h1>
+            <p class="text-gray-400 text-sm">Cognitive & Speed Lab</p>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="text-sm text-gray-400 mb-1 block">Nickname</label>
+              <input id="guestNickname" type="text" maxlength="16" placeholder="Enter your nickname"
+                class="w-full bg-panel-2 border border-purple-500/20 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-accent focus:outline-none transition" />
+            </div>
+            <div>
+              <label class="text-sm text-gray-400 mb-2 block">Choose Avatar</label>
+              <div id="avatarGrid" class="grid grid-cols-6 gap-2"></div>
+            </div>
+            <button id="playGuestBtn" class="w-full bg-accent hover:bg-accent-dark text-white font-semibold py-3 rounded-lg transition-all hover:shadow-lg hover:shadow-purple-500/30">
+              Play as Guest
+            </button>
+            <div class="flex items-center gap-3 text-gray-500 text-xs">
+              <div class="flex-1 h-px bg-gray-700"></div> OR <div class="flex-1 h-px bg-gray-700"></div>
+            </div>
+            <button id="googleSignInBtn" class="w-full bg-white hover:bg-gray-100 text-gray-900 font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-3">
+              <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>
+              Sign in with Google
+            </button>
+          </div>
+          <p class="text-center text-xs text-gray-600 mt-6">By continuing you agree to our Terms & Privacy Policy.</p>
+        </div>
+      </div>
+
+      <!-- ============ HEADER ============ -->
+      <header id="header" class="sticky top-0 z-40 bg-cyber/90 glass border-b border-purple-500/10 hidden">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-3 cursor-pointer" onclick="navigate('dashboard')">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center font-extrabold text-lg">K</div>
+            <div>
+              <span class="font-extrabold text-lg accent-glow text-accent">Kei</span>
+              <span class="text-gray-500 text-sm hidden sm:inline">— Cognitive & Speed Lab</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <!-- ADSENSE PLACEHOLDER: Header Leaderboard -->
+            <div class="ad-placeholder hidden lg:flex w-[468px] h-[60px] rounded-lg">Ad — 468×60 Leaderboard</div>
+            <div id="userBadge" class="flex items-center gap-3 bg-panel border border-purple-500/20 rounded-full px-3 py-1.5"></div>
+            <button id="themeToggle" class="w-9 h-9 rounded-lg bg-panel border border-purple-500/20 flex items-center justify-center hover:border-accent transition">
+              <span id="themeIcon">🌙</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ============ MAIN CONTENT ============ -->
+      <main id="main" class="max-w-7xl mx-auto px-4 py-6 hidden">
+        <!-- ADSENSE PLACEHOLDER: Top Banner -->
+        <div class="ad-placeholder w-full h-[90px] rounded-lg mb-6">Ad — 728×90 Banner</div>
+
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="view">
+          <div class="mb-8">
+            <h2 class="text-3xl font-extrabold mb-2">Welcome back, <span id="welcomeName" class="text-accent">Player</span></h2>
+            <p class="text-gray-400">Choose a game to train your mind, or challenge a friend.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+            <!-- Game 1 Card -->
+            <div class="card-hover bg-panel border border-purple-500/10 rounded-2xl p-6 cursor-pointer" onclick="navigate('game1')">
+              <div class="flex items-start gap-4">
+                <div class="w-14 h-14 rounded-xl bg-accent/20 flex items-center justify-center text-2xl shrink-0">🧮</div>
+                <div>
+                  <h3 class="font-bold text-lg mb-1">Pauli Test</h3>
+                  <p class="text-gray-400 text-sm">Continuous chained addition. Enter the unit digit of each sum. Tests sustained concentration and work curve.</p>
+                </div>
+              </div>
+            </div>
+            <!-- Game 2 Card -->
+            <div class="card-hover bg-panel border border-purple-500/10 rounded-2xl p-6 cursor-pointer" onclick="navigate('game2')">
+              <div class="flex items-start gap-4">
+                <div class="w-14 h-14 rounded-xl bg-accent/20 flex items-center justify-center text-2xl shrink-0">⚡</div>
+                <div>
+                  <h3 class="font-bold text-lg mb-1">Reflex Test</h3>
+                  <p class="text-gray-400 text-sm">Human benchmark reaction time. Wait for green, then click. 5-round average with false start detection.</p>
+                </div>
+              </div>
+            </div>
+            <!-- Game 3 Card -->
+            <div class="card-hover bg-panel border border-purple-500/10 rounded-2xl p-6 cursor-pointer" onclick="navigate('game3')">
+              <div class="flex items-start gap-4">
+                <div class="w-14 h-14 rounded-xl bg-accent/20 flex items-center justify-center text-2xl shrink-0">🔢</div>
+                <div>
+                  <h3 class="font-bold text-lg mb-1">Number Memory</h3>
+                  <p class="text-gray-400 text-sm">Digit span memory training. Memorize the sequence and type it back. Each level adds another digit.</p>
+                </div>
+              </div>
+            </div>
+            <!-- Game 4 Card -->
+            <div class="card-hover bg-panel border border-purple-500/10 rounded-2xl p-6 cursor-pointer" onclick="navigate('game4')">
+              <div class="flex items-start gap-4">
+                <div class="w-14 h-14 rounded-xl bg-accent/20 flex items-center justify-center text-2xl shrink-0">⌨️</div>
+                <div>
+                  <h3 class="font-bold text-lg mb-1">Typing Speed</h3>
+                  <p class="text-gray-400 text-sm">Niche typing categories: Medical, Programming, Legal, Tech. Live WPM, accuracy, and character highlighting.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multiplayer Section -->
+          <div class="bg-panel border border-purple-500/10 rounded-2xl p-6 mb-6">
+            <h3 class="font-bold text-xl mb-4 flex items-center gap-2">🎮 Multiplayer Arena</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-5">
+                <h4 class="font-semibold mb-2">Play with Friends</h4>
+                <p class="text-gray-400 text-sm mb-4">Create a room and share the code, or join with a code.</p>
+                <div class="flex gap-2">
+                  <button onclick="createRoom()" class="flex-1 bg-accent hover:bg-accent-dark text-white font-semibold py-2.5 rounded-lg transition">Create Room</button>
+                  <button onclick="showJoinRoom()" class="flex-1 bg-panel border border-purple-500/20 hover:border-accent text-white font-semibold py-2.5 rounded-lg transition">Join Room</button>
+                </div>
+                <div id="joinRoomInput" class="mt-3 hidden">
+                  <input id="roomCodeInput" type="text" maxlength="6" placeholder="6-digit code" class="w-full bg-cyber border border-purple-500/20 rounded-lg px-3 py-2 text-white text-center text-lg tracking-widest focus:border-accent focus:outline-none" />
+                  <button onclick="joinRoom()" class="w-full mt-2 bg-accent hover:bg-accent-dark text-white font-semibold py-2 rounded-lg transition">Join</button>
+                </div>
+              </div>
+              <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-5">
+                <h4 class="font-semibold mb-2">Quick Match</h4>
+                <p class="text-gray-400 text-sm mb-4">Get matched with a random opponent for a live battle.</p>
+                <button onclick="findMatch()" class="w-full bg-accent hover:bg-accent-dark text-white font-semibold py-2.5 rounded-lg transition">Find Match</button>
+                <button id="cancelMatchBtn" onclick="cancelMatch()" class="w-full mt-2 bg-panel border border-red-500/30 hover:border-red-500 text-red-400 font-semibold py-2 rounded-lg transition hidden">Cancel Search</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Overview -->
+          <div class="bg-panel border border-purple-500/10 rounded-2xl p-6">
+            <h3 class="font-bold text-xl mb-4">Your Stats</h3>
+            <div id="statsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+          </div>
+        </div>
+
+        <!-- GAME 1: PAULI TEST VIEW -->
+        <div id="view-game1" class="view hidden">
+          <button onclick="navigate('dashboard')" class="text-gray-400 hover:text-accent mb-4 flex items-center gap-1 text-sm">← Back to Dashboard</button>
+          <div class="bg-panel border border-purple-500/10 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+              <div>
+                <h2 class="text-2xl font-extrabold flex items-center gap-2">🧮 Pauli Test</h2>
+                <p class="text-gray-400 text-sm mt-1">Enter the unit digit of the sum. Problems chain automatically.</p>
+              </div>
+              <div id="pauliTimer" class="text-3xl font-mono font-bold text-accent">01:00</div>
+            </div>
+            <!-- Timer Settings -->
+            <div id="pauliSettings" class="flex flex-wrap gap-2 mb-6">
+              <button onclick="startPauli(30)" class="px-4 py-2 bg-panel-2 border border-purple-500/20 rounded-lg hover:border-accent transition text-sm">30s</button>
+              <button onclick="startPauli(60)" class="px-4 py-2 bg-accent text-white rounded-lg text-sm">1 min</button>
+              <button onclick="startPauli(600)" class="px-4 py-2 bg-panel-2 border border-purple-500/20 rounded-lg hover:border-accent transition text-sm">10 min</button>
+              <div class="flex items-center gap-2">
+                <input id="pauliCustomTime" type="number" min="5" max="3600" placeholder="Custom (s)" class="w-24 bg-panel-2 border border-purple-500/20 rounded-lg px-3 py-2 text-sm text-white focus:border-accent focus:outline-none" />
+                <button onclick="startPauliCustom()" class="px-4 py-2 bg-panel-2 border border-purple-500/20 rounded-lg hover:border-accent transition text-sm">Start</button>
+              </div>
+            </div>
+            <!-- Game Area -->
+            <div id="pauliGameArea" class="hidden">
+              <div class="flex justify-center gap-8 mb-6">
+                <div class="text-center">
+                  <div class="text-gray-400 text-sm mb-1">Solved</div>
+                  <div id="pauliSolved" class="text-2xl font-bold">0</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-gray-400 text-sm mb-1">Errors</div>
+                  <div id="pauliErrors" class="text-2xl font-bold text-red-400">0</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-gray-400 text-sm mb-1">Rate/min</div>
+                  <div id="pauliRate" class="text-2xl font-bold text-accent">0</div>
+                </div>
+              </div>
+              <div class="flex flex-col items-center gap-6">
+                <div id="pauliProblem" class="text-6xl font-mono font-bold tracking-wider">— + —</div>
+                <div id="pauliAnswer" class="w-20 h-20 rounded-2xl bg-panel-2 border-2 border-purple-500/30 flex items-center justify-center text-5xl font-mono font-bold"></div>
+                <!-- Keypad -->
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="text-gray-400 text-sm">Layout:</span>
+                  <button onclick="toggleKeypadLayout()" id="pauliLayoutBtn" class="text-xs bg-panel-2 border border-purple-500/20 rounded-lg px-3 py-1 hover:border-accent transition">Calculator</button>
+                </div>
+                <div id="pauliKeypad" class="grid grid-cols-3 gap-2 w-48"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME 2: REFLEX TEST VIEW -->
+        <div id="view-game2" class="view hidden">
+          <button onclick="navigate('dashboard')" class="text-gray-400 hover:text-accent mb-4 flex items-center gap-1 text-sm">← Back to Dashboard</button>
+          <div class="bg-panel border border-purple-500/10 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="text-2xl font-extrabold flex items-center gap-2">⚡ Reflex Test</h2>
+                <p class="text-gray-400 text-sm mt-1">Wait for green, then click as fast as you can.</p>
+              </div>
+              <div id="reflexRound" class="text-sm text-gray-400">Round 0 / 5</div>
+            </div>
+            <div id="reflexArena" class="relative w-full h-80 rounded-2xl flex items-center justify-center cursor-pointer transition-colors duration-150"
+              style="background:#3B0B0B" onclick="reflexClick()">
+              <div id="reflexText" class="text-center text-2xl font-bold px-4">Click to Start</div>
+            </div>
+            <div class="mt-6 grid grid-cols-5 gap-2">
+              <div id="reflexResults" class="contents"></div>
+            </div>
+            <div class="mt-4 text-center">
+              <div class="text-gray-400 text-sm">Average: <span id="reflexAvg" class="text-accent font-bold text-lg">—</span> ms</div>
+            </div>
+            <div class="mt-4 flex gap-3 justify-center">
+              <button onclick="startReflex()" class="bg-accent hover:bg-accent-dark text-white font-semibold px-6 py-2.5 rounded-lg transition">Start Test</button>
+              <button onclick="startReflexRace()" class="bg-panel-2 border border-purple-500/20 hover:border-accent text-white font-semibold px-6 py-2.5 rounded-lg transition">1v1 Race</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME 3: NUMBER MEMORY VIEW -->
+        <div id="view-game3" class="view hidden">
+          <button onclick="navigate('dashboard')" class="text-gray-400 hover:text-accent mb-4 flex items-center gap-1 text-sm">← Back to Dashboard</button>
+          <div class="bg-panel border border-purple-500/10 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="text-2xl font-extrabold flex items-center gap-2">🔢 Number Memory</h2>
+                <p class="text-gray-400 text-sm mt-1">Memorize the digits, then type them back.</p>
+              </div>
+              <div class="text-right">
+                <div class="text-gray-400 text-sm">Level</div>
+                <div id="memoryLevel" class="text-3xl font-bold text-accent">3</div>
+              </div>
+            </div>
+            <div class="flex flex-col items-center gap-6">
+              <div id="memoryDisplay" class="text-6xl font-mono font-bold tracking-[0.3em] min-h-[80px] flex items-center">Press Start</div>
+              <div id="memoryStatus" class="text-gray-400 text-sm h-6"></div>
+              <div class="flex gap-3">
+                <button id="memoryStartBtn" onclick="startMemory()" class="bg-accent hover:bg-accent-dark text-white font-semibold px-6 py-2.5 rounded-lg transition">Start</button>
+                <button id="memorySubmitBtn" onclick="submitMemory()" class="bg-panel-2 border border-purple-500/20 hover:border-accent text-white font-semibold px-6 py-2.5 rounded-lg transition hidden">Submit</button>
+              </div>
+              <!-- Keypad -->
+              <div class="flex items-center gap-3 mb-2">
+                <span class="text-gray-400 text-sm">Layout:</span>
+                <button onclick="toggleKeypadLayout()" id="memoryLayoutBtn" class="text-xs bg-panel-2 border border-purple-500/20 rounded-lg px-3 py-1 hover:border-accent transition">Calculator</button>
+              </div>
+              <div id="memoryKeypad" class="grid grid-cols-3 gap-2 w-48"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME 4: TYPING SPEED VIEW -->
+        <div id="view-game4" class="view hidden">
+          <button onclick="navigate('dashboard')" class="text-gray-400 hover:text-accent mb-4 flex items-center gap-1 text-sm">← Back to Dashboard</button>
+          <div class="bg-panel border border-purple-500/10 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+              <div>
+                <h2 class="text-2xl font-extrabold flex items-center gap-2">⌨️ Typing Speed</h2>
+                <p class="text-gray-400 text-sm mt-1">Type the text as fast and accurately as you can.</p>
+              </div>
+              <div class="flex gap-2 flex-wrap">
+                <button onclick="startTyping('medical')" class="typing-cat-btn px-3 py-1.5 bg-accent text-white rounded-lg text-xs transition">Medical</button>
+                <button onclick="startTyping('programming')" class="typing-cat-btn px-3 py-1.5 bg-panel-2 border border-purple-500/20 rounded-lg text-xs hover:border-accent transition">Programming</button>
+                <button onclick="startTyping('legal')" class="typing-cat-btn px-3 py-1.5 bg-panel-2 border border-purple-500/20 rounded-lg text-xs hover:border-accent transition">Legal</button>
+                <button onclick="startTyping('tech')" class="typing-cat-btn px-3 py-1.5 bg-panel-2 border border-purple-500/20 rounded-lg text-xs hover:border-accent transition">Tech</button>
+              </div>
+            </div>
+            <div class="flex gap-6 mb-6">
+              <div class="text-center"><div class="text-gray-400 text-sm">WPM</div><div id="typingWpm" class="text-3xl font-bold text-accent">0</div></div>
+              <div class="text-center"><div class="text-gray-400 text-sm">Accuracy</div><div id="typingAcc" class="text-3xl font-bold">100%</div></div>
+              <div class="text-center"><div class="text-gray-400 text-sm">Time</div><div id="typingTime" class="text-3xl font-bold font-mono">0s</div></div>
+            </div>
+            <div id="typingText" class="bg-panel-2 border border-purple-500/10 rounded-xl p-6 text-xl leading-relaxed font-mono min-h-[120px] mb-4"></div>
+            <input id="typingInput" type="text" class="w-full bg-cyber border-2 border-purple-500/20 rounded-xl px-4 py-3 text-white text-lg font-mono focus:border-accent focus:outline-none transition" placeholder="Click Start and begin typing..." disabled />
+            <div class="mt-4 text-center">
+              <button onclick="startTyping(currentTypingCategory)" class="bg-accent hover:bg-accent-dark text-white font-semibold px-6 py-2.5 rounded-lg transition">Start / Restart</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOBBY VIEW -->
+        <div id="view-lobby" class="view hidden">
+          <button onclick="leaveRoom()" class="text-gray-400 hover:text-accent mb-4 flex items-center gap-1 text-sm">← Leave Room</button>
+          <div class="bg-panel border border-purple-500/10 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+              <div>
+                <h2 class="text-2xl font-extrabold">Game Lobby</h2>
+                <p class="text-gray-400 text-sm mt-1">Room Code: <span id="lobbyRoomCode" class="text-accent font-mono font-bold text-lg"></span></p>
+              </div>
+              <button onclick="copyRoomCode()" class="bg-panel-2 border border-purple-500/20 hover:border-accent text-white text-sm font-semibold px-4 py-2 rounded-lg transition">Copy Link</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-5">
+                <div class="text-gray-400 text-sm mb-2">You</div>
+                <div id="lobbyPlayer1" class="flex items-center gap-3"></div>
+              </div>
+              <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-5">
+                <div class="text-gray-400 text-sm mb-2">Opponent</div>
+                <div id="lobbyPlayer2" class="flex items-center gap-3 text-gray-500">Waiting for opponent...</div>
+              </div>
+            </div>
+            <div class="mb-6">
+              <label class="text-gray-400 text-sm mb-2 block">Game Mode</label>
+              <select id="lobbyGameMode" class="bg-panel-2 border border-purple-500/20 rounded-lg px-4 py-2.5 text-white focus:border-accent focus:outline-none" onchange="updateRoomGameMode()">
+                <option value="game1">Pauli Test</option>
+                <option value="game2">Reflex Race</option>
+                <option value="game4">Typing Speed</option>
+              </select>
+            </div>
+            <div id="lobbyStatus" class="text-center text-gray-400 mb-4">Waiting for opponent to join...</div>
+            <div id="lobbyStartBtn" class="text-center hidden">
+              <button onclick="startBattle()" class="bg-accent hover:bg-accent-dark text-white font-bold px-8 py-3 rounded-lg transition text-lg">Start Battle</button>
+            </div>
+            <div id="lobbyCountdown" class="text-center text-6xl font-bold text-accent hidden"></div>
+          </div>
+        </div>
+
+        <!-- BATTLE VIEW -->
+        <div id="view-battle" class="view hidden">
+          <div class="bg-panel border border-purple-500/10 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
+              <div id="battlePlayer1Info" class="flex items-center gap-3"></div>
+              <div id="battleTimer" class="text-3xl font-mono font-bold text-accent">01:00</div>
+              <div id="battlePlayer2Info" class="flex items-center gap-3"></div>
+            </div>
+            <div class="mb-4">
+              <div class="flex justify-between text-sm mb-1">
+                <span id="battleP1Name" class="font-semibold">You</span>
+                <span id="battleP2Name" class="font-semibold text-gray-400">Opponent</span>
+              </div>
+              <div class="flex gap-2">
+                <div class="flex-1 h-3 bg-panel-2 rounded-full overflow-hidden">
+                  <div id="battleP1Progress" class="h-full bg-accent progress-bar-fill" style="width:0%"></div>
+                </div>
+                <div class="flex-1 h-3 bg-panel-2 rounded-full overflow-hidden">
+                  <div id="battleP2Progress" class="h-full bg-accent-dark progress-bar-fill" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div id="battleGameArea"></div>
+          </div>
+        </div>
+
+        <!-- ADSENSE PLACEHOLDER: Sidebar -->
+        <div class="ad-placeholder w-full h-[250px] rounded-lg mt-6">Ad — 300×250 Sidebar</div>
+      </main>
+
+      <!-- ============ FOOTER ============ -->
+      <footer id="footer" class="border-t border-purple-500/10 mt-12 hidden">
+        <div class="max-w-7xl mx-auto px-4 py-8">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+            <div>
+              <h3 class="font-bold text-accent mb-3">Kei — Cognitive & Speed Lab</h3>
+              <p class="text-gray-400 text-sm">Train your brain with scientifically inspired cognitive tests. Compete in real-time multiplayer battles and track your progress.</p>
+            </div>
+            <div>
+              <h3 class="font-bold mb-3">Games</h3>
+              <ul class="space-y-2 text-gray-400 text-sm">
+                <li><a href="#" onclick="navigate('game1');return false" class="hover:text-accent transition">Pauli Test</a></li>
+                <li><a href="#" onclick="navigate('game2');return false" class="hover:text-accent transition">Reflex Test</a></li>
+                <li><a href="#" onclick="navigate('game3');return false" class="hover:text-accent transition">Number Memory</a></li>
+                <li><a href="#" onclick="navigate('game4');return false" class="hover:text-accent transition">Typing Speed</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="font-bold mb-3">Legal</h3>
+              <ul class="space-y-2 text-gray-400 text-sm">
+                <li><a href="#" onclick="showModal('privacy');return false" class="hover:text-accent transition">Privacy Policy</a></li>
+                <li><a href="#" onclick="showModal('terms');return false" class="hover:text-accent transition">Terms of Service</a></li>
+                <li><a href="#" onclick="showModal('about');return false" class="hover:text-accent transition">About</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="text-center text-gray-500 text-xs border-t border-purple-500/10 pt-4">
+            <p>Kei — Cognitive & Speed Lab. Reaction time tests, memory training, typing speed, and the Pauli work curve.</p>
+            <p class="mt-1">© 2026 Kei Lab. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+
+      <!-- ============ GENERIC MODAL ============ -->
+      <div id="genericModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md">
+        <div class="modal-content bg-panel border border-purple-500/20 rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h2 id="genericModalTitle" class="text-xl font-bold"></h2>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl">×</button>
+          </div>
+          <div id="genericModalBody" class="text-gray-300 text-sm leading-relaxed"></div>
+        </div>
+      </div>
+
+      <!-- ============ GAME OVER MODAL ============ -->
+      <div id="gameOverModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md">
+        <div class="modal-content bg-panel border border-purple-500/20 rounded-2xl p-6 max-w-md w-full mx-4">
+          <div class="text-center">
+            <h2 id="gameOverTitle" class="text-2xl font-extrabold mb-4"></h2>
+            <div id="gameOverBody" class="mb-4"></div>
+            <!-- ADSENSE PLACEHOLDER: Post-Game Result Modal -->
+            <div class="ad-placeholder w-full h-[90px] rounded-lg mb-4">Ad — Post-Game Banner</div>
+            <div class="flex gap-3 justify-center">
+              <button onclick="closeGameOver()" class="bg-panel-2 border border-purple-500/20 hover:border-accent text-white font-semibold px-6 py-2.5 rounded-lg transition">Close</button>
+              <button id="gameOverRetry" class="bg-accent hover:bg-accent-dark text-white font-semibold px-6 py-2.5 rounded-lg transition">Play Again</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TOAST ============ -->
+      <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+        <div class="bg-panel border border-purple-500/30 rounded-lg px-5 py-3 shadow-xl text-sm"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      // ============================================================
+      // FIREBASE INITIALIZATION
+      // ============================================================
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+      import {
+        getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously,
+        onAuthStateChanged, updateProfile
+      } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+      import {
+        getDatabase, ref, set, get, update, remove, onValue, onDisconnect, serverTimestamp
+      } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAjkupiEXR4Din-gXB8SXU2-IUW6OhSDSQ",
+        authDomain: "kei-cognitive.firebaseapp.com",
+        projectId: "kei-cognitive",
+        storageBucket: "kei-cognitive.firebasestorage.app",
+        messagingSenderId: "1016187705360",
+        appId: "1:1016187705360:web:e00f1e4744fac695879295",
+        measurementId: "G-KVET4FW9QX"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getDatabase(app);
+      const googleProvider = new GoogleAuthProvider();
+
+      // ============================================================
+      // GLOBAL STATE
+      // ============================================================
+      let currentUser = null;
+      let userProfile = null;
+      let currentRoom = null;
+      let roomListener = null;
+      let matchListener = null;
+      let battleListener = null;
+      let currentKeypadLayout = localStorage.getItem('kei_keypadLayout') || 'calculator';
+
+      // Game states
+      let pauliState = {};
+      let reflexState = {};
+      let memoryState = {};
+      let typingState = {};
+      let battleState = {};
+      let currentTypingCategory = 'medical';
+
+      // Avatars
+      const AVATARS = ['🦊','🐼','🦉','🐙','🦄','🐉','🦅','🐺','🦁','🐸','🦈','🐲'];
+
+      // ============================================================
+      // AUTH & USER MANAGEMENT
+      // ============================================================
+      const avatarGrid = document.getElementById('avatarGrid');
+      let selectedAvatar = AVATARS[0];
+      AVATARS.forEach((av, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = av;
+        btn.className = 'w-10 h-10 rounded-lg bg-panel-2 border border-purple-500/10 hover:border-accent text-xl transition';
+        if (i === 0) btn.classList.add('border-accent');
+        btn.onclick = () => {
+          selectedAvatar = av;
+          avatarGrid.querySelectorAll('button').forEach(b => b.classList.remove('border-accent'));
+          btn.classList.add('border-accent');
+        };
+        avatarGrid.appendChild(btn);
+      });
+
+      async function signInGuest() {
+        const nickname = document.getElementById('guestNickname').value.trim() || 'Guest' + Math.floor(Math.random() * 1000);
+        try {
+          const cred = await signInAnonymously(auth);
+          await updateProfile(cred.user, { displayName: nickname, photoURL: selectedAvatar });
+          await ensureUserRecord(cred.user, nickname, selectedAvatar);
+        } catch (e) {
+          showToast('Auth error: ' + e.message);
+        }
+      }
+
+      async function signInGoogle() {
+        try {
+          const cred = await signInWithPopup(auth, googleProvider);
+          const name = cred.user.displayName || 'Player';
+          const photo = cred.user.photoURL || AVATARS[Math.floor(Math.random() * AVATARS.length)];
+          await ensureUserRecord(cred.user, name, photo);
+        } catch (e) {
+          showToast('Google sign-in error: ' + e.message);
+        }
+      }
+
+      async function ensureUserRecord(user, displayName, photoURL) {
+        const userRef = ref(db, 'users/' + user.uid);
+        const snap = await get(userRef);
+        if (!snap.exists()) {
+          await set(userRef, {
+            displayName: displayName,
+            email: user.email || '',
+            photoURL: photoURL,
+            eloRating: 1200,
+            stats: {
+              pauliBest: 0,
+              reflexBest: 99999,
+              memoryBest: 0,
+              typingBest: 0,
+              gamesPlayed: 0,
+              wins: 0,
+              losses: 0
+            },
+            createdAt: serverTimestamp()
+          });
+        }
+        const profileSnap = await get(userRef);
+        userProfile = profileSnap.val();
+      }
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          currentUser = user;
+          initAppForUser();
+        } else {
+          currentUser = null;
+          userProfile = null;
+          document.getElementById('loginModal').classList.remove('hidden');
+          document.getElementById('loginModal').classList.add('flex');
+          document.getElementById('header').classList.add('hidden');
+          document.getElementById('main').classList.add('hidden');
+          document.getElementById('footer').classList.add('hidden');
+        }
+      });
+
+      async function initAppForUser() {
+        const userRef = ref(db, 'users/' + currentUser.uid);
+        const snap = await get(userRef);
+        if (snap.exists()) {
+          userProfile = snap.val();
+        } else {
+          const name = currentUser.displayName || 'Player';
+          const photo = currentUser.photoURL || AVATARS[Math.floor(Math.random() * AVATARS.length)];
+          await ensureUserRecord(currentUser, name, photo);
+        }
+        document.getElementById('loginModal').classList.add('hidden');
+        document.getElementById('loginModal').classList.remove('flex');
+        document.getElementById('header').classList.remove('hidden');
+        document.getElementById('main').classList.remove('hidden');
+        document.getElementById('footer').classList.remove('hidden');
+        updateUserBadge();
+        updateStatsGrid();
+        navigate('dashboard');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomParam = urlParams.get('room');
+        if (roomParam) {
+          document.getElementById('roomCodeInput').value = roomParam;
+          joinRoom();
+        }
+      }
+
+      function updateUserBadge() {
+        if (!userProfile) return;
+        const badge = document.getElementById('userBadge');
+        const name = userProfile.displayName || 'Player';
+        const photo = userProfile.photoURL || '🦊';
+        const elo = userProfile.eloRating || 1200;
+        const isEmoji = photo && photo.length <= 2;
+        badge.innerHTML = `
+          ${isEmoji ? `<span class="text-xl">${photo}</span>` : `<img src="${photo}" class="w-7 h-7 rounded-full" />`}
+          <span class="font-semibold text-sm hidden sm:inline">${name}</span>
+          <span class="bg-accent/20 text-accent text-xs font-bold px-2 py-0.5 rounded-full">${elo} ELO</span>
+        `;
+        document.getElementById('welcomeName').textContent = name;
+      }
+
+      function updateStatsGrid() {
+        if (!userProfile || !userProfile.stats) return;
+        const s = userProfile.stats;
+        document.getElementById('statsGrid').innerHTML = `
+          <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-4 text-center">
+            <div class="text-2xl font-bold text-accent">${s.pauliBest || 0}</div>
+            <div class="text-gray-400 text-xs mt-1">Pauli Best (solved)</div>
+          </div>
+          <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-4 text-center">
+            <div class="text-2xl font-bold text-accent">${s.reflexBest && s.reflexBest < 99999 ? s.reflexBest + 'ms' : '—'}</div>
+            <div class="text-gray-400 text-xs mt-1">Best Reflex Time</div>
+          </div>
+          <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-4 text-center">
+            <div class="text-2xl font-bold text-accent">${s.memoryBest || 0}</div>
+            <div class="text-gray-400 text-xs mt-1">Memory Best (level)</div>
+          </div>
+          <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-4 text-center">
+            <div class="text-2xl font-bold text-accent">${s.typingBest || 0}</div>
+            <div class="text-gray-400 text-xs mt-1">Typing Best (WPM)</div>
+          </div>
+          <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-4 text-center">
+            <div class="text-2xl font-bold">${s.gamesPlayed || 0}</div>
+            <div class="text-gray-400 text-xs mt-1">Games Played</div>
+          </div>
+          <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-4 text-center">
+            <div class="text-2xl font-bold text-success">${s.wins || 0}</div>
+            <div class="text-gray-400 text-xs mt-1">Wins</div>
+          </div>
+          <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-4 text-center">
+            <div class="text-2xl font-bold text-error">${s.losses || 0}</div>
+            <div class="text-gray-400 text-xs mt-1">Losses</div>
+          </div>
+          <div class="bg-panel-2 border border-purple-500/10 rounded-xl p-4 text-center">
+            <div class="text-2xl font-bold text-accent">${userProfile.eloRating || 1200}</div>
+            <div class="text-gray-400 text-xs mt-1">ELO Rating</div>
+          </div>
+        `;
+      }
+
+      async function updateStat(statKey, value) {
+        if (!currentUser || !userProfile) return;
+        const s = userProfile.stats || {};
+        if (statKey === 'reflexBest') {
+          if (!s.reflexBest || value < s.reflexBest) s.reflexBest = value;
+        } else if (value > (s[statKey] || 0)) {
+          s[statKey] = value;
+        }
+        s.gamesPlayed = (s.gamesPlayed || 0) + 1;
+        userProfile.stats = s;
+        await update(ref(db, 'users/' + currentUser.uid), { stats: s });
+        updateStatsGrid();
+      }
+
+      document.getElementById('playGuestBtn').onclick = signInGuest;
+      document.getElementById('googleSignInBtn').onclick = signInGoogle;
+      document.getElementById('guestNickname').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') signInGuest();
+      });
+
+      // ============================================================
+      // THEME TOGGLE
+      // ============================================================
+      const themeToggle = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+      function applyTheme(theme) {
+        if (theme === 'light') {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+          themeIcon.textContent = '☀️';
+        } else {
+          document.documentElement.classList.remove('light');
+          document.documentElement.classList.add('dark');
+          themeIcon.textContent = '🌙';
+        }
+      }
+      applyTheme(localStorage.getItem('kei_theme') || 'dark');
+      themeToggle.onclick = () => {
+        const current = document.documentElement.classList.contains('light') ? 'light' : 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('kei_theme', next);
+        applyTheme(next);
+      };
+
+      // ============================================================
+      // NAVIGATION
+      // ============================================================
+      window.navigate = function(view) {
+        document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+        const el = document.getElementById('view-' + view);
+        if (el) el.classList.remove('hidden');
+        window.scrollTo(0, 0);
+      };
+
+      // ============================================================
+      // KEYPAD LAYOUT TOGGLE
+      // ============================================================
+      window.toggleKeypadLayout = function() {
+        currentKeypadLayout = currentKeypadLayout === 'calculator' ? 'phone' : 'calculator';
+        localStorage.setItem('kei_keypadLayout', currentKeypadLayout);
+        document.querySelectorAll('[id$="LayoutBtn"]').forEach(btn => {
+          btn.textContent = currentKeypadLayout === 'calculator' ? 'Calculator' : 'Phone';
+        });
+        renderKeypads();
+      };
+
+      function getKeypadOrder() {
+        if (currentKeypadLayout === 'calculator') {
+          return [7,8,9,4,5,6,1,2,3,0];
+        } else {
+          return [1,2,3,4,5,6,7,8,9,0];
+        }
+      }
+
+      function renderKeypad(targetId, onPress) {
+        const keypad = document.getElementById(targetId);
+        if (!keypad) return;
+        keypad.innerHTML = '';
+        const order = getKeypadOrder();
+        order.forEach(num => {
+          const btn = document.createElement('button');
+          btn.textContent = num;
+          btn.className = 'key-btn h-14 rounded-xl bg-panel-2 border border-purple-500/20 text-2xl font-bold hover:border-accent transition';
+          btn.onclick = () => onPress(num);
+          keypad.appendChild(btn);
+        });
+      }
+
+      function renderKeypads() {
+        document.querySelectorAll('[id$="LayoutBtn"]').forEach(btn => {
+          btn.textContent = currentKeypadLayout === 'calculator' ? 'Calculator' : 'Phone';
+        });
+      }
+      renderKeypads();
+
+      // ============================================================
+      // GAME 1: PAULI TEST
+      // ============================================================
+      window.startPauli = function(duration) {
+        pauliState = {
+          a: Math.floor(Math.random() * 9) + 1,
+          b: Math.floor(Math.random() * 9) + 1,
+          solved: 0,
+          errors: 0,
+          timeLeft: duration,
+          duration: duration,
+          timeline: [],
+          startTime: Date.now(),
+          active: true
+        };
+        document.getElementById('pauliSettings').classList.add('hidden');
+        document.getElementById('pauliGameArea').classList.remove('hidden');
+        updatePauliProblem();
+        renderKeypad('pauliKeypad', pauliKeypress);
+
+        pauliState.timer = setInterval(() => {
+          pauliState.timeLeft--;
+          updatePauliTimer();
+          const elapsed = Math.floor((Date.now() - pauliState.startTime) / 1000);
+          if (elapsed % 5 === 0) {
+            pauliState.timeline.push({ t: elapsed, solved: pauliState.solved });
+          }
+          if (pauliState.timeLeft <= 0) endPauli();
+        }, 1000);
+        updatePauliTimer();
+      };
+
+      window.startPauliCustom = function() {
+        const val = parseInt(document.getElementById('pauliCustomTime').value);
+        if (val && val >= 5) startPauli(val);
+      };
+
+      function updatePauliProblem() {
+        document.getElementById('pauliProblem').textContent = `${pauliState.a} + ${pauliState.b}`;
+        document.getElementById('pauliAnswer').textContent = '';
+      }
+
+      function updatePauliTimer() {
+        const t = pauliState.timeLeft;
+        const m = Math.floor(t / 60).toString().padStart(2, '0');
+        const s = (t % 60).toString().padStart(2, '0');
+        document.getElementById('pauliTimer').textContent = `${m}:${s}`;
+        const elapsed = Math.max(1, pauliState.duration - t);
+        const rate = Math.round((pauliState.solved / elapsed) * 60);
+        document.getElementById('pauliRate').textContent = rate;
+      }
+
+      window.pauliKeypress = function(num) {
+        if (!pauliState.active) return;
+        const sum = pauliState.a + pauliState.b;
+        const unitDigit = sum % 10;
+        if (num === unitDigit) {
+          pauliState.solved++;
+        } else {
+          pauliState.errors++;
+        }
+        document.getElementById('pauliSolved').textContent = pauliState.solved;
+        document.getElementById('pauliErrors').textContent = pauliState.errors;
+        pauliState.a = pauliState.b;
+        pauliState.b = Math.floor(Math.random() * 9) + 1;
+        updatePauliProblem();
+        updatePauliTimer();
+      };
+
+      // Physical keyboard for Pauli
+      document.addEventListener('keydown', (e) => {
+        if (pauliState.active && e.key >= '0' && e.key <= '9') {
+          pauliKeypress(parseInt(e.key));
+        }
+      });
+
+      function endPauli() {
+        clearInterval(pauliState.timer);
+        pauliState.active = false;
+        updateStat('pauliBest', pauliState.solved);
+
+        const elapsed = pauliState.duration;
+        const rate = Math.round((pauliState.solved / elapsed) * 60);
+
+        document.getElementById('gameOverTitle').textContent = 'Pauli Test Complete';
+        document.getElementById('gameOverBody').innerHTML = `
+          <div class="space-y-2 text-lg">
+            <div>Solved: <span class="font-bold text-accent">${pauliState.solved}</span></div>
+            <div>Errors: <span class="font-bold text-red-400">${pauliState.errors}</span></div>
+            <div>Rate: <span class="font-bold">${rate}/min</span></div>
+          </div>
+          <canvas id="pauliChart" class="mt-4 max-h-[200px]"></canvas>
+        `;
+        document.getElementById('gameOverRetry').onclick = () => { closeGameOver(); startPauli(pauliState.duration); };
+        showGameOver();
+
+        setTimeout(() => renderPauliChart(), 100);
+      }
+
+      function renderPauliChart() {
+        const ctx = document.getElementById('pauliChart');
+        if (!ctx) return;
+        const timeline = pauliState.timeline.length > 1 ? pauliState.timeline : [{t:0,solved:0},{t:pauliState.duration,solved:pauliState.solved}];
+        const labels = timeline.map(p => p.t + 's');
+        const data = timeline.map((p, i) => {
+          if (i === 0) return 0;
+          const dt = p.t - timeline[i-1].t;
+          const ds = p.solved - timeline[i-1].solved;
+          return dt > 0 ? Math.round((ds / dt) * 60) : 0;
+        });
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Solve Rate (per min)',
+              data: data,
+              borderColor: '#A855F7',
+              backgroundColor: 'rgba(168,85,247,0.1)',
+              fill: true,
+              tension: 0.3,
+              pointBackgroundColor: '#A855F7',
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#888' } } },
+            scales: {
+              x: { ticks: { color: '#666' }, grid: { color: '#222' } },
+              y: { ticks: { color: '#666' }, grid: { color: '#222' }, beginAtZero: true }
+            }
+          }
+        });
+      }
+
+      // ============================================================
+      // GAME 2: REFLEX TEST
+      // ============================================================
+      window.startReflex = function() {
+        reflexState = {
+          rounds: [],
+          currentRound: 0,
+          maxRounds: 5,
+          startTime: 0,
+          state: 'idle',
+          timeoutId: null
+        };
+        document.getElementById('reflexResults').innerHTML = '';
+        document.getElementById('reflexAvg').textContent = '—';
+        nextReflexRound();
+      };
+
+      function nextReflexRound() {
+        if (reflexState.currentRound >= reflexState.maxRounds) {
+          finishReflex();
+          return;
+        }
+        reflexState.currentRound++;
+        document.getElementById('reflexRound').textContent = `Round ${reflexState.currentRound} / ${reflexState.maxRounds}`;
+        reflexState.state = 'waiting';
+        const arena = document.getElementById('reflexArena');
+        const text = document.getElementById('reflexText');
+        arena.style.background = '#3B0B0B';
+        text.textContent = 'Wait for green...';
+
+        const delay = 1500 + Math.random() * 3000;
+        reflexState.timeoutId = setTimeout(() => {
+          reflexState.state = 'ready';
+          arena.style.background = '#0B6B0B';
+          text.textContent = 'CLICK NOW!';
+          reflexState.startTime = Date.now();
+        }, delay);
+      }
+
+      window.reflexClick = function() {
+        const arena = document.getElementById('reflexArena');
+        const text = document.getElementById('reflexText');
+        if (reflexState.state === 'idle' || !reflexState.state) {
+          startReflex();
+          return;
+        }
+        if (reflexState.state === 'waiting') {
+          clearTimeout(reflexState.timeoutId);
+          reflexState.state = 'falsestart';
+          arena.style.background = '#5B0B0B';
+          text.textContent = 'False Start! Click to retry';
+          reflexState.state = 'idle';
+          reflexState.currentRound--;
+          return;
+        }
+        if (reflexState.state === 'ready') {
+          const reactionTime = Date.now() - reflexState.startTime;
+          reflexState.rounds.push(reactionTime);
+          reflexState.state = 'clicked';
+          arena.style.background = '#0B0B3B';
+          text.textContent = `${reactionTime} ms`;
+          renderReflexResults();
+          setTimeout(() => nextReflexRound(), 1000);
+        }
+      };
+
+      function renderReflexResults() {
+        const container = document.getElementById('reflexResults');
+        container.innerHTML = '';
+        for (let i = 0; i < reflexState.maxRounds; i++) {
+          const div = document.createElement('div');
+          div.className = 'bg-panel-2 border border-purple-500/10 rounded-lg p-2 text-center text-sm';
+          if (reflexState.rounds[i]) {
+            div.innerHTML = `<div class="text-gray-400 text-xs">R${i+1}</div><div class="font-bold text-accent">${reflexState.rounds[i]}ms</div>`;
+          } else {
+            div.innerHTML = `<div class="text-gray-400 text-xs">R${i+1}</div><div class="text-gray-600">—</div>`;
+          }
+          container.appendChild(div);
+        }
+      }
+
+      function finishReflex() {
+        const avg = Math.round(reflexState.rounds.reduce((a,b) => a+b, 0) / reflexState.rounds.length);
+        document.getElementById('reflexAvg').textContent = avg;
+        document.getElementById('reflexArena').style.background = '#0B0B3B';
+        document.getElementById('reflexText').textContent = `Done! Avg: ${avg}ms`;
+        updateStat('reflexBest', avg);
+        document.getElementById('gameOverTitle').textContent = 'Reflex Test Complete';
+        document.getElementById('gameOverBody').innerHTML = `
+          <div class="space-y-2 text-lg">
+            ${reflexState.rounds.map((r, i) => `<div>Round ${i+1}: <span class="font-bold text-accent">${r}ms</span></div>`).join('')}
+            <div class="pt-2 border-t border-purple-500/10">Average: <span class="font-bold text-accent text-xl">${avg}ms</span></div>
+          </div>
+        `;
+        document.getElementById('gameOverRetry').onclick = () => { closeGameOver(); startReflex(); };
+        showGameOver();
+      }
+
+      window.startReflexRace = function() {
+        showToast('1v1 Reflex Race — create a room and select Reflex mode to race a friend!');
+      };
+
+      // ============================================================
+      // GAME 3: NUMBER MEMORY
+      // ============================================================
+      window.startMemory = function() {
+        memoryState = {
+          level: 3,
+          sequence: '',
+          input: '',
+          phase: 'display',
+          displayTime: 2000
+        };
+        document.getElementById('memoryStartBtn').classList.add('hidden');
+        nextMemoryRound();
+      };
+
+      function nextMemoryRound() {
+        memoryState.sequence = '';
+        for (let i = 0; i < memoryState.level; i++) {
+          memoryState.sequence += Math.floor(Math.random() * 10);
+        }
+        memoryState.input = '';
+        memoryState.phase = 'display';
+        document.getElementById('memoryLevel').textContent = memoryState.level;
+        document.getElementById('memoryDisplay').textContent = memoryState.sequence;
+        document.getElementById('memoryStatus').textContent = `Memorize! (${(memoryState.displayTime/1000).toFixed(1)}s)`;
+        document.getElementById('memorySubmitBtn').classList.add('hidden');
+        renderKeypad('memoryKeypad', memoryKeypress);
+
+        setTimeout(() => {
+          if (memoryState.phase !== 'display') return;
+          memoryState.phase = 'input';
+          document.getElementById('memoryDisplay').textContent = '';
+          document.getElementById('memoryStatus').textContent = 'Type the sequence!';
+          document.getElementById('memorySubmitBtn').classList.remove('hidden');
+        }, memoryState.displayTime);
+      }
+
+      window.memoryKeypress = function(num) {
+        if (memoryState.phase !== 'input') return;
+        memoryState.input += num;
+        document.getElementById('memoryDisplay').textContent = '*'.repeat(memoryState.input.length);
+        if (memoryState.input.length >= memoryState.sequence.length) {
+          submitMemory();
+        }
+      };
+
+      document.addEventListener('keydown', (e) => {
+        if (memoryState.phase === 'input' && e.key >= '0' && e.key <= '9') {
+          memoryKeypress(parseInt(e.key));
+        }
+      });
+
+      window.submitMemory = function() {
+        if (memoryState.phase !== 'input') return;
+        memoryState.phase = 'result';
+        if (memoryState.input === memoryState.sequence) {
+          document.getElementById('memoryDisplay').textContent = memoryState.sequence;
+          document.getElementById('memoryStatus').textContent = 'Correct! Next level...';
+          memoryState.level++;
+          memoryState.displayTime = Math.max(800, 2000 - (memoryState.level - 3) * 150);
+          updateStat('memoryBest', memoryState.level - 1);
+          setTimeout(() => nextMemoryRound(), 1500);
+        } else {
+          document.getElementById('memoryDisplay').innerHTML = `<span class="text-red-400">${memoryState.input}</span> <span class="text-gray-500">vs</span> <span class="text-success">${memoryState.sequence}</span>`;
+          document.getElementById('memoryStatus').textContent = 'Wrong! Game Over.';
+          document.getElementById('memorySubmitBtn').classList.add('hidden');
+          document.getElementById('memoryStartBtn').textContent = 'Try Again';
+          document.getElementById('memoryStartBtn').classList.remove('hidden');
+          document.getElementById('gameOverTitle').textContent = 'Memory Test Over';
+          document.getElementById('gameOverBody').innerHTML = `
+            <div class="space-y-2 text-lg">
+              <div>Reached Level: <span class="font-bold text-accent">${memoryState.level}</span></div>
+              <div class="text-gray-400">Correct answer was: <span class="font-mono text-success">${memoryState.sequence}</span></div>
+            </div>
+          `;
+          document.getElementById('gameOverRetry').onclick = () => { closeGameOver(); startMemory(); };
+          showGameOver();
+        }
+      };
+
+      // ============================================================
+      // GAME 4: TYPING SPEED
+      // ============================================================
+      const TYPING_TEXTS = {
+        medical: [
+          "The patient presented with acute myocardial infarction and was immediately administered aspirin and nitroglycerin to reduce cardiac workload.",
+          "Hypertension is a chronic medical condition characterized by elevated blood pressure in the systemic arteries requiring ongoing pharmacological intervention.",
+          "The differential diagnosis includes appendicitis, cholecystitis, and pancreatitis based on the localization of abdominal tenderness and rebound."
+        ],
+        programming: [
+          "const fetchData = async (url) => { const response = await fetch(url); return response.json(); }; export default fetchData;",
+          "function quickSort(arr) { if (arr.length <= 1) return arr; const pivot = arr[0]; const left = arr.filter(x => x < pivot); const right = arr.filter(x => x > pivot); return [...quickSort(left), pivot, ...quickSort(right)]; }",
+          "class Node { constructor(value) { this.value = value; this.next = null; this.prev = null; } } class LinkedList { constructor() { this.head = null; this.tail = null; this.size = 0; } }"
+        ],
+        legal: [
+          "The party of the first part hereby agrees to indemnify and hold harmless the party of the second part from any and all liabilities arising from said transaction.",
+          "Pursuant to Section 12(b) of the aforementioned agreement, either party may terminate this contract with thirty days written notice delivered by certified mail.",
+          "The defendant moved for summary judgment pursuant to Rule 56 asserting no genuine dispute of material fact exists and that judgment is warranted as a matter of law."
+        ],
+        tech: [
+          "The Kubernetes cluster orchestrates containerized microservices across multiple nodes with automatic scaling, rolling updates, and self-healing capabilities enabled.",
+          "Docker containers provide lightweight virtualization through namespace isolation and cgroups, enabling consistent deployment from development to production environments.",
+          "The RESTful API implements OAuth 2.0 authentication with JWT tokens, rate limiting middleware, and CORS headers for cross-origin resource sharing between domains."
+        ]
+      };
+
+      window.startTyping = function(category) {
+        currentTypingCategory = category;
+        document.querySelectorAll('.typing-cat-btn').forEach(btn => {
+          btn.classList.remove('bg-accent', 'text-white');
+          btn.classList.add('bg-panel-2', 'border', 'border-purple-500/20');
+        });
+        event.target.classList.add('bg-accent', 'text-white');
+        event.target.classList.remove('bg-panel-2', 'border', 'border-purple-500/20');
+
+        const texts = TYPING_TEXTS[category];
+        typingState = {
+          text: texts[Math.floor(Math.random() * texts.length)],
+          startTime: 0,
+          errors: 0,
+          typed: 0,
+          finished: false,
+          timer: null
+        };
+
+        renderTypingText();
+        const input = document.getElementById('typingInput');
+        input.disabled = false;
+        input.value = '';
+        input.focus();
+        document.getElementById('typingWpm').textContent = '0';
+        document.getElementById('typingAcc').textContent = '100%';
+        document.getElementById('typingTime').textContent = '0s';
+
+        input.oninput = handleTypingInput;
+      };
+
+      function renderTypingText() {
+        const container = document.getElementById('typingText');
+        container.innerHTML = '';
+        [...typingState.text].forEach((char, i) => {
+          const span = document.createElement('span');
+          span.textContent = char;
+          span.className = 'typing-char';
+          span.id = 'tc-' + i;
+          if (i === 0) span.classList.add('current');
+          container.appendChild(span);
+        });
+      }
+
+      function handleTypingInput(e) {
+        if (typingState.finished) return;
+        if (!typingState.startTime) {
+          typingState.startTime = Date.now();
+          typingState.timer = setInterval(updateTypingStats, 200);
+        }
+        const input = e.target.value;
+        typingState.typed = input.length;
+        let correct = 0;
+        for (let i = 0; i < input.length; i++) {
+          const span = document.getElementById('tc-' + i);
+          if (!span) break;
+          span.classList.remove('current');
+          if (input[i] === typingState.text[i]) {
+            span.classList.add('correct');
+            span.classList.remove('incorrect');
+            correct++;
+          } else {
+            span.classList.add('incorrect');
+            span.classList.remove('correct');
+          }
+        }
+        const nextSpan = document.getElementById('tc-' + input.length);
+        if (nextSpan) nextSpan.classList.add('current');
+        typingState.errors = input.length - correct;
+        updateTypingStats();
+
+        if (input.length >= typingState.text.length) {
+          finishTyping();
+        }
+      }
+
+      function updateTypingStats() {
+        if (!typingState.startTime) return;
+        const elapsed = (Date.now() - typingState.startTime) / 1000;
+        const wpm = Math.round((typingState.typed / 5) / (elapsed / 60));
+        const acc = typingState.typed > 0 ? Math.round(((typingState.typed - typingState.errors) / typingState.typed) * 100) : 100;
+        document.getElementById('typingWpm').textContent = wpm;
+        document.getElementById('typingAcc').textContent = acc + '%';
+        document.getElementById('typingTime').textContent = Math.round(elapsed) + 's';
+      }
+
+      function finishTyping() {
+        clearInterval(typingState.timer);
+        typingState.finished = true;
+        document.getElementById('typingInput').disabled = true;
+        const elapsed = (Date.now() - typingState.startTime) / 1000;
+        const wpm = Math.round((typingState.typed / 5) / (elapsed / 60));
+        const acc = Math.round(((typingState.typed - typingState.errors) / typingState.typed) * 100);
+        updateStat('typingBest', wpm);
+        document.getElementById('gameOverTitle').textContent = 'Typing Test Complete';
+        document.getElementById('gameOverBody').innerHTML = `
+          <div class="space-y-2 text-lg">
+            <div>WPM: <span class="font-bold text-accent">${wpm}</span></div>
+            <div>Accuracy: <span class="font-bold ${acc >= 90 ? 'text-success' : acc >= 70 ? 'text-warning' : 'text-error'}">${acc}%</span></div>
+            <div>Time: <span class="font-bold">${elapsed.toFixed(1)}s</span></div>
+            <div>Category: <span class="font-bold capitalize">${currentTypingCategory}</span></div>
+          </div>
+        `;
+        document.getElementById('gameOverRetry').onclick = () => { closeGameOver(); startTyping(currentTypingCategory); };
+        showGameOver();
+      }
+
+      // ============================================================
+      // MULTIPLAYER: ROOMS & MATCHMAKING
+      // ============================================================
+      window.createRoom = async function() {
+        if (!currentUser) return;
+        const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+        currentRoom = roomCode;
+        await set(ref(db, 'rooms/' + roomCode), {
+          host: currentUser.uid,
+          status: 'waiting',
+          gameMode: 'game1',
+          createdAt: serverTimestamp(),
+          players: {
+            [currentUser.uid]: {
+              displayName: userProfile.displayName,
+              photoURL: userProfile.photoURL,
+              eloRating: userProfile.eloRating,
+              ready: true
+            }
+          }
+        });
+        onDisconnect(ref(db, 'rooms/' + roomCode + '/players/' + currentUser.uid)).remove();
+        listenToRoom(roomCode);
+        navigate('lobby');
+      };
+
+      window.showJoinRoom = function() {
+        document.getElementById('joinRoomInput').classList.toggle('hidden');
+      };
+
+      window.joinRoom = async function() {
+        const code = document.getElementById('roomCodeInput').value.trim();
+        if (!code || !currentUser) return;
+        const roomRef = ref(db, 'rooms/' + code);
+        const snap = await get(roomRef);
+        if (!snap.exists()) {
+          showToast('Room not found');
+          return;
+        }
+        const room = snap.val();
+        const players = room.players || {};
+        if (Object.keys(players).length >= 2) {
+          showToast('Room is full');
+          return;
+        }
+        currentRoom = code;
+        await update(roomRef, {
+          [`players/${currentUser.uid}`]: {
+            displayName: userProfile.displayName,
+            photoURL: userProfile.photoURL,
+            eloRating: userProfile.eloRating,
+            ready: true
+          },
+          status: 'ready'
+        });
+        onDisconnect(ref(db, 'rooms/' + code + '/players/' + currentUser.uid)).remove();
+        listenToRoom(code);
+        navigate('lobby');
+      };
+
+      window.copyRoomCode = function() {
+        const url = window.location.origin + '?room=' + currentRoom;
+        navigator.clipboard.writeText(url).then(() => showToast('Link copied!'));
+      };
+
+      window.updateRoomGameMode = async function() {
+        if (!currentRoom) return;
+        const mode = document.getElementById('lobbyGameMode').value;
+        await update(ref(db, 'rooms/' + currentRoom), { gameMode: mode });
+      };
+
+      function listenToRoom(code) {
+        if (roomListener) roomListener();
+        roomListener = onValue(ref(db, 'rooms/' + code), (snap) => {
+          if (!snap.exists()) {
+            showToast('Room closed');
+            navigate('dashboard');
+            return;
+          }
+          const room = snap.val();
+          renderLobby(room);
+          if (room.status === 'countdown') {
+            renderCountdown(room.countdown);
+          }
+          if (room.status === 'playing') {
+            startMultiplayerBattle(room);
+          }
+        });
+      }
+
+      function renderLobby(room) {
+        document.getElementById('lobbyRoomCode').textContent = currentRoom;
+        const playerIds = Object.keys(room.players || {});
+        const p1 = room.players[currentUser.uid];
+        const p2Id = playerIds.find(id => id !== currentUser.uid);
+        const p2 = p2Id ? room.players[p2Id] : null;
+
+        const renderPlayer = (el, player, isYou) => {
+          if (!player) { el.innerHTML = '<span class="text-gray-500">Waiting for opponent...</span>'; return; }
+          const isEmoji = player.photoURL && player.photoURL.length <= 2;
+          el.innerHTML = `
+            ${isEmoji ? `<span class="text-2xl">${player.photoURL}</span>` : `<img src="${player.photoURL}" class="w-8 h-8 rounded-full" />`}
+            <div>
+              <div class="font-semibold">${player.displayName} ${isYou ? '(You)' : ''}</div>
+              <div class="text-xs text-accent">${player.eloRating} ELO</div>
+            </div>
+          `;
+        };
+        renderPlayer(document.getElementById('lobbyPlayer1'), p1, true);
+        renderPlayer(document.getElementById('lobbyPlayer2'), p2, false);
+
+        document.getElementById('lobbyGameMode').value = room.gameMode || 'game1';
+
+        if (p2) {
+          document.getElementById('lobbyStatus').textContent = 'Opponent joined! Ready to start.';
+          if (room.host === currentUser.uid) {
+            document.getElementById('lobbyStartBtn').classList.remove('hidden');
+          } else {
+            document.getElementById('lobbyStatus').textContent = 'Waiting for host to start the battle...';
+          }
+        } else {
+          document.getElementById('lobbyStatus').textContent = 'Waiting for opponent to join...';
+          document.getElementById('lobbyStartBtn').classList.add('hidden');
+        }
+      }
+
+      window.startBattle = async function() {
+        if (!currentRoom) return;
+        const seed = Math.floor(Math.random() * 1000000);
+        await update(ref(db, 'rooms/' + currentRoom), {
+          status: 'countdown',
+          countdown: 3,
+          seed: seed
+        });
+        for (let i = 3; i > 0; i--) {
+          await update(ref(db, 'rooms/' + currentRoom), { countdown: i });
+          await new Promise(r => setTimeout(r, 1000));
+        }
+        await update(ref(db, 'rooms/' + currentRoom), { status: 'playing' });
+      };
+
+      function renderCountdown(num) {
+        document.getElementById('lobbyStartBtn').classList.add('hidden');
+        const cd = document.getElementById('lobbyCountdown');
+        cd.classList.remove('hidden');
+        cd.textContent = num;
+        if (num <= 0) cd.classList.add('hidden');
+      }
+
+      window.leaveRoom = async function() {
+        if (currentRoom && currentUser) {
+          await remove(ref(db, 'rooms/' + currentRoom + '/players/' + currentUser.uid));
+          const snap = await get(ref(db, 'rooms/' + currentRoom));
+          if (!snap.exists() || !snap.val().players || Object.keys(snap.val().players).length === 0) {
+            await remove(ref(db, 'rooms/' + currentRoom));
+          }
+        }
+        if (roomListener) { roomListener(); roomListener = null; }
+        currentRoom = null;
+        navigate('dashboard');
+      };
+
+      // Quick Match
+      window.findMatch = async function() {
+        if (!currentUser) return;
+        document.getElementById('cancelMatchBtn').classList.remove('hidden');
+        const queueRef = ref(db, 'matchmakingQueue');
+        const snap = await get(queueRef);
+        const queue = snap.val() || {};
+        const opponentId = Object.keys(queue).find(id => id !== currentUser.uid);
+
+        if (opponentId) {
+          await remove(ref(db, 'matchmakingQueue/' + opponentId));
+          const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+          currentRoom = roomCode;
+          await set(ref(db, 'rooms/' + roomCode), {
+            host: opponentId,
+            status: 'ready',
+            gameMode: 'game1',
+            seed: Math.floor(Math.random() * 1000000),
+            createdAt: serverTimestamp(),
+            players: {
+              [opponentId]: queue[opponentId],
+              [currentUser.uid]: {
+                displayName: userProfile.displayName,
+                photoURL: userProfile.photoURL,
+                eloRating: userProfile.eloRating,
+                ready: true
+              }
+            }
+          });
+          onDisconnect(ref(db, 'rooms/' + roomCode + '/players/' + currentUser.uid)).remove();
+          listenToRoom(roomCode);
+          navigate('lobby');
+        } else {
+          await set(ref(db, 'matchmakingQueue/' + currentUser.uid), {
+            displayName: userProfile.displayName,
+            photoURL: userProfile.photoURL,
+            eloRating: userProfile.eloRating,
+            searching: true
+          });
+          onDisconnect(ref(db, 'matchmakingQueue/' + currentUser.uid)).remove();
+          matchListener = onValue(ref(db, 'matchmakingQueue/' + currentUser.uid), (snap) => {
+            if (!snap.exists()) {
+              document.getElementById('cancelMatchBtn').classList.add('hidden');
+              showToast('Match found!');
+            }
+          });
+          matchListener = onValue(queueRef, async (snap) => {
+            const q = snap.val() || {};
+            const oid = Object.keys(q).find(id => id !== currentUser.uid);
+            if (oid) {
+              await remove(ref(db, 'matchmakingQueue/' + oid));
+              await remove(ref(db, 'matchmakingQueue/' + currentUser.uid));
+              const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+              currentRoom = roomCode;
+              await set(ref(db, 'rooms/' + roomCode), {
+                host: currentUser.uid,
+                status: 'ready',
+                gameMode: 'game1',
+                seed: Math.floor(Math.random() * 1000000),
+                createdAt: serverTimestamp(),
+                players: {
+                  [currentUser.uid]: {
+                    displayName: userProfile.displayName,
+                    photoURL: userProfile.photoURL,
+                    eloRating: userProfile.eloRating,
+                    ready: true
+                  },
+                  [oid]: q[oid]
+                }
+              });
+              onDisconnect(ref(db, 'rooms/' + roomCode + '/players/' + currentUser.uid)).remove();
+              listenToRoom(roomCode);
+              navigate('lobby');
+            }
+          });
+        }
+      };
+
+      window.cancelMatch = async function() {
+        if (currentUser) {
+          await remove(ref(db, 'matchmakingQueue/' + currentUser.uid));
+        }
+        if (matchListener) { matchListener(); matchListener = null; }
+        document.getElementById('cancelMatchBtn').classList.add('hidden');
+        showToast('Match search cancelled');
+      };
+
+      // ============================================================
+      // MULTIPLAYER BATTLE
+      // ============================================================
+      function startMultiplayerBattle(room) {
+        if (battleListener) battleListener();
+        navigate('battle');
+        const playerIds = Object.keys(room.players || {});
+        const p2Id = playerIds.find(id => id !== currentUser.uid);
+        const p2 = p2Id ? room.players[p2Id] : null;
+
+        document.getElementById('battleP1Name').textContent = userProfile.displayName;
+        document.getElementById('battleP2Name').textContent = p2 ? p2.displayName : 'Opponent';
+
+        const renderInfo = (el, player, isYou) => {
+          const isEmoji = player.photoURL && player.photoURL.length <= 2;
+          el.innerHTML = `
+            ${isEmoji ? `<span class="text-xl">${player.photoURL}</span>` : `<img src="${player.photoURL}" class="w-8 h-8 rounded-full" />`}
+            <span class="font-semibold text-sm">${player.displayName} ${isYou ? '(You)' : ''}</span>
+            <span class="text-xs text-accent">${player.eloRating}</span>
+          `;
+        };
+        renderInfo(document.getElementById('battlePlayer1Info'), userProfile, true);
+        if (p2) renderInfo(document.getElementById('battlePlayer2Info'), p2, false);
+
+        const gameMode = room.gameMode || 'game1';
+        const seed = room.seed || 0;
+
+        if (gameMode === 'game1') {
+          initBattlePauli(seed);
+        } else if (gameMode === 'game2') {
+          initBattleReflex(seed);
+        } else {
+          initBattleTyping(seed);
+        }
+
+        battleListener = onValue(ref(db, 'rooms/' + currentRoom), (snap) => {
+          if (!snap.exists()) return;
+          const r = snap.val();
+          if (r.status === 'finished') {
+            handleBattleEnd(r);
+          }
+          const oppId = Object.keys(r.players || {}).find(id => id !== currentUser.uid);
+          if (oppId && r.players[oppId]) {
+            const oppScore = r.players[oppId].score || 0;
+            document.getElementById('battleP2Progress').style.width = Math.min(100, oppScore) + '%';
+          }
+        });
+      }
+
+      function initBattlePauli(seed) {
+        battleState = {
+          a: ((seed % 9) + 1),
+          b: ((seed * 7 % 9) + 1),
+          solved: 0,
+          timeLeft: 60,
+          active: true,
+          startTime: Date.now()
+        };
+        document.getElementById('battleGameArea').innerHTML = `
+          <div class="flex flex-col items-center gap-4">
+            <div id="battleProblem" class="text-5xl font-mono font-bold">${battleState.a} + ${battleState.b}</div>
+            <div id="battleAnswer" class="w-16 h-16 rounded-2xl bg-panel-2 border-2 border-purple-500/30 flex items-center justify-center text-4xl font-mono font-bold"></div>
+            <div id="battleKeypad" class="grid grid-cols-3 gap-2 w-44"></div>
+          </div>
+        `;
+        renderKeypad('battleKeypad', battlePauliKeypress);
+        battleState.timer = setInterval(() => {
+          battleState.timeLeft--;
+          const m = Math.floor(battleState.timeLeft / 60).toString().padStart(2, '0');
+          const s = (battleState.timeLeft % 60).toString().padStart(2, '0');
+          document.getElementById('battleTimer').textContent = `${m}:${s}`;
+          document.getElementById('battleP1Progress').style.width = Math.min(100, battleState.solved) + '%';
+          update(ref(db, 'rooms/' + currentRoom + '/players/' + currentUser.uid), { score: battleState.solved });
+          if (battleState.timeLeft <= 0) endBattle();
+        }, 1000);
+      }
+
+      window.battlePauliKeypress = function(num) {
+        if (!battleState.active) return;
+        const sum = battleState.a + battleState.b;
+        const unit = sum % 10;
+        if (num === unit) battleState.solved++;
+        document.getElementById('battleP1Progress').style.width = Math.min(100, battleState.solved) + '%';
+        battleState.a = battleState.b;
+        battleState.b = Math.floor(Math.random() * 9) + 1;
+        document.getElementById('battleProblem').textContent = `${battleState.a} + ${battleState.b}`;
+        document.getElementById('battleAnswer').textContent = '';
+      };
+
+      document.addEventListener('keydown', (e) => {
+        if (battleState.active && e.key >= '0' && e.key <= '9' && document.getElementById('view-battle') && !document.getElementById('view-battle').classList.contains('hidden')) {
+          battlePauliKeypress(parseInt(e.key));
+        }
+      });
+
+      function initBattleReflex(seed) {
+        battleState = { rounds: [], currentRound: 0, maxRounds: 5, startTime: 0, state: 'idle', active: true, total: 0 };
+        document.getElementById('battleGameArea').innerHTML = `
+          <div id="battleReflexArena" class="w-full h-64 rounded-2xl flex items-center justify-center cursor-pointer" style="background:#3B0B0B" onclick="battleReflexClick()">
+            <div id="battleReflexText" class="text-2xl font-bold">Click to Start</div>
+          </div>
+        `;
+        setTimeout(() => nextBattleReflexRound(), 500);
+      }
+
+      function nextBattleReflexRound() {
+        if (battleState.currentRound >= battleState.maxRounds) {
+          endBattle();
+          return;
+        }
+        battleState.currentRound++;
+        battleState.state = 'waiting';
+        const arena = document.getElementById('battleReflexArena');
+        const text = document.getElementById('battleReflexText');
+        arena.style.background = '#3B0B0B';
+        text.textContent = `Round ${battleState.currentRound}/5 — Wait for green...`;
+        const delay = 1500 + Math.random() * 3000;
+        setTimeout(() => {
+          if (battleState.state !== 'waiting') return;
+          battleState.state = 'ready';
+          arena.style.background = '#0B6B0B';
+          text.textContent = 'CLICK!';
+          battleState.startTime = Date.now();
+        }, delay);
+      }
+
+      window.battleReflexClick = function() {
+        if (battleState.state === 'waiting') {
+          battleState.state = 'idle';
+          document.getElementById('battleReflexText').textContent = 'False start! Retry...';
+          battleState.currentRound--;
+          setTimeout(() => nextBattleReflexRound(), 1500);
+          return;
+        }
+        if (battleState.state === 'ready') {
+          const rt = Date.now() - battleState.startTime;
+          battleState.rounds.push(rt);
+          battleState.total += rt;
+          battleState.state = 'idle';
+          document.getElementById('battleReflexText').textContent = `${rt}ms`;
+          update(ref(db, 'rooms/' + currentRoom + '/players/' + currentUser.uid), { score: -rt });
+          document.getElementById('battleP1Progress').style.width = Math.min(100, (battleState.currentRound / 5) * 100) + '%';
+          setTimeout(() => nextBattleReflexRound(), 1200);
+        }
+      };
+
+      function initBattleTyping(seed) {
+        const texts = TYPING_TEXTS.tech;
+        battleState = {
+          text: texts[seed % texts.length],
+          typed: 0,
+          startTime: 0,
+          finished: false,
+          active: true,
+          timer: null
+        };
+        document.getElementById('battleGameArea').innerHTML = `
+          <div id="battleTypingText" class="bg-panel-2 rounded-xl p-4 text-base leading-relaxed font-mono min-h-[80px] mb-3"></div>
+          <input id="battleTypingInput" type="text" class="w-full bg-cyber border-2 border-purple-500/20 rounded-xl px-4 py-2.5 text-white text-lg font-mono focus:border-accent focus:outline-none" placeholder="Start typing..." />
+        `;
+        renderBattleTypingText();
+        const input = document.getElementById('battleTypingInput');
+        input.focus();
+        input.oninput = (e) => {
+          if (battleState.finished) return;
+          if (!battleState.startTime) {
+            battleState.startTime = Date.now();
+            battleState.timer = setInterval(() => {
+              const elapsed = (Date.now() - battleState.startTime) / 1000;
+              const wpm = Math.round((battleState.typed / 5) / (elapsed / 60));
+              document.getElementById('battleP1Progress').style.width = Math.min(100, (battleState.typed / battleState.text.length) * 100) + '%';
+              update(ref(db, 'rooms/' + currentRoom + '/players/' + currentUser.uid), { score: wpm });
+            }, 500);
+          }
+          const input = e.target.value;
+          battleState.typed = input.length;
+          renderBattleTypingText(input);
+          if (input.length >= battleState.text.length) {
+            clearInterval(battleState.timer);
+            battleState.finished = true;
+            const elapsed = (Date.now() - battleState.startTime) / 1000;
+            const wpm = Math.round((battleState.typed / 5) / (elapsed / 60));
+            update(ref(db, 'rooms/' + currentRoom + '/players/' + currentUser.uid), { score: wpm, finished: true });
+            endBattle();
+          }
+        };
+      }
+
+      function renderBattleTypingText(input = '') {
+        const container = document.getElementById('battleTypingText');
+        if (!container) return;
+        container.innerHTML = '';
+        [...battleState.text].forEach((char, i) => {
+          const span = document.createElement('span');
+          span.textContent = char;
+          if (i < input.length) {
+            span.className = input[i] === char ? 'typing-char correct' : 'typing-char incorrect';
+          } else if (i === input.length) {
+            span.className = 'typing-char current';
+          } else {
+            span.className = 'typing-char';
+          }
+          container.appendChild(span);
+        });
+      }
+
+      async function endBattle() {
+        if (!battleState.active) return;
+        battleState.active = false;
+        if (battleState.timer) clearInterval(battleState.timer);
+
+        const roomSnap = await get(ref(db, 'rooms/' + currentRoom));
+        if (!roomSnap.exists()) return;
+        const room = roomSnap.val();
+        const players = room.players || {};
+        const myScore = players[currentUser.uid]?.score || 0;
+        const oppId = Object.keys(players).find(id => id !== currentUser.uid);
+        const oppScore = oppId ? (players[oppId]?.score || 0) : 0;
+
+        const gameMode = room.gameMode || 'game1';
+        let won = false;
+        if (gameMode === 'game2') {
+          won = myScore > oppScore; // less negative = faster
+        } else {
+          won = myScore > oppScore;
+        }
+
+        await update(ref(db, 'rooms/' + currentRoom), { status: 'finished', winner: won ? currentUser.uid : oppId });
+        await applyEloChange(won);
+      }
+
+      async function applyEloChange(won) {
+        if (!currentUser || !userProfile) return;
+        const oldElo = userProfile.eloRating || 1200;
+        const k = 32;
+        const change = won ? k : -k;
+        const newElo = Math.max(100, oldElo + change);
+        userProfile.eloRating = newElo;
+        const s = userProfile.stats || {};
+        s.gamesPlayed = (s.gamesPlayed || 0) + 1;
+        if (won) s.wins = (s.wins || 0) + 1; else s.losses = (s.losses || 0) + 1;
+        userProfile.stats = s;
+        await update(ref(db, 'users/' + currentUser.uid), { eloRating: newElo, stats: s });
+        updateUserBadge();
+        updateStatsGrid();
+        showBattleResult(won, change, newElo);
+      }
+
+      function handleBattleEnd(room) {
+        if (battleListener) { battleListener(); battleListener = null; }
+        if (battleState.timer) clearInterval(battleState.timer);
+        battleState.active = false;
+        const won = room.winner === currentUser.uid;
+        const players = room.players || {};
+        const oppId = Object.keys(players).find(id => id !== currentUser.uid);
+        const myScore = players[currentUser.uid]?.score || 0;
+        const oppScore = oppId ? (players[oppId]?.score || 0) : 0;
+        showBattleResult(won, won ? 32 : -32, userProfile.eloRating, myScore, oppScore);
+      }
+
+      function showBattleResult(won, eloChange, newElo, myScore, oppScore) {
+        document.getElementById('gameOverTitle').innerHTML = won
+          ? '<span class="text-success">Victory!</span>'
+          : '<span class="text-error">Defeat</span>';
+        document.getElementById('gameOverBody').innerHTML = `
+          <div class="space-y-2 text-lg">
+            ${myScore !== undefined ? `<div>Your Score: <span class="font-bold text-accent">${Math.abs(myScore)}</span></div>` : ''}
+            ${oppScore !== undefined ? `<div>Opponent: <span class="font-bold">${Math.abs(oppScore)}</span></div>` : ''}
+            <div>ELO: <span class="font-bold ${eloChange >= 0 ? 'text-success' : 'text-error'}">${eloChange >= 0 ? '+' : ''}${eloChange}</span> → <span class="font-bold text-accent">${newElo}</span></div>
+          </div>
+        `;
+        document.getElementById('gameOverRetry').onclick = () => { closeGameOver(); navigate('dashboard'); };
+        showGameOver();
+      }
+
+      // ============================================================
+      // MODALS & UI HELPERS
+      // ============================================================
+      window.showModal = function(type) {
+        const titles = { privacy: 'Privacy Policy', terms: 'Terms of Service', about: 'About Kei' };
+        const bodies = {
+          privacy: `<p>Kei — Cognitive & Speed Lab respects your privacy. We collect minimal data necessary for gameplay including your display name, avatar, and game statistics. This data is stored securely in Firebase Realtime Database. We do not sell or share your personal information with third parties. Guest data is stored anonymously. You can request data deletion at any time.</p><br><p>We use cookies and local storage to remember your theme preference and keypad layout. No tracking pixels or third-party analytics are used.</p>`,
+          terms: `<p>By using Kei — Cognitive & Speed Lab, you agree to use the platform for entertainment and cognitive training purposes only. You must not cheat, exploit bugs, or harass other players. ELO ratings are computed based on match outcomes and may fluctuate. We reserve the right to suspend accounts that violate these terms.</p><br><p>The platform is provided "as is" without warranty. We are not liable for any damages arising from use of the service.</p>`,
+          about: `<p>Kei — Cognitive & Speed Lab is a brain training platform featuring four scientifically inspired cognitive tests:</p><br><ul class="list-disc list-inside space-y-1"><li><b>Pauli Test</b> — Continuous addition work curve analysis</li><li><b>Reflex Test</b> — Human benchmark reaction time</li><li><b>Number Memory</b> — Digit span memory training</li><li><b>Typing Speed</b> — Niche vocabulary typing challenges</li></ul><br><p>Compete in real-time multiplayer battles, climb the ELO ladder, and track your cognitive performance over time.</p>`
+        };
+        document.getElementById('genericModalTitle').textContent = titles[type];
+        document.getElementById('genericModalBody').innerHTML = bodies[type];
+        document.getElementById('genericModal').classList.remove('hidden');
+        document.getElementById('genericModal').classList.add('flex');
+      };
+
+      window.closeModal = function() {
+        document.getElementById('genericModal').classList.add('hidden');
+        document.getElementById('genericModal').classList.remove('flex');
+      };
+
+      function showGameOver() {
+        document.getElementById('gameOverModal').classList.remove('hidden');
+        document.getElementById('gameOverModal').classList.add('flex');
+      }
+      window.closeGameOver = function() {
+        document.getElementById('gameOverModal').classList.add('hidden');
+        document.getElementById('gameOverModal').classList.remove('flex');
+      };
+
+      function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.querySelector('div').textContent = msg;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3000);
+      }
+    </script>
+  </body>
+</html>
