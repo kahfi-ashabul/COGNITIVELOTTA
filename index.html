@@ -505,8 +505,8 @@
       // ============================================================
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
       import {
-        getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously,
-        onAuthStateChanged, updateProfile
+        getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+        signInAnonymously, onAuthStateChanged, updateProfile
       } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
       import {
         getDatabase, ref, set, get, update, remove, onValue, onDisconnect, serverTimestamp
@@ -611,15 +611,62 @@
       }
 
       async function signInGoogle() {
+        const btn = document.getElementById('googleSignInBtn');
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Connecting...';
         try {
           const cred = await signInWithPopup(auth, googleProvider);
           const name = cred.user.displayName || 'Player';
           const photo = cred.user.photoURL || AVATARS[Math.floor(Math.random() * AVATARS.length)];
           await ensureUserRecord(cred.user, name, photo);
         } catch (e) {
-          showToast('Google sign-in error: ' + e.message);
+          console.error('Google sign-in error:', e);
+          handleGoogleAuthError(e);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = originalContent;
         }
       }
+
+      function handleGoogleAuthError(e) {
+        const errorMessages = {
+          'auth/popup-closed-by-user': 'The sign-in window was closed before completing. Please try again.',
+          'auth/popup-blocked': 'The sign-in popup was blocked by your browser. Please allow popups for this site and try again.',
+          'auth/cancelled-popup-request': 'Sign-in was cancelled. Please try again.',
+          'auth/unauthorized-domain': 'This domain is not authorized for Google sign-in. In development, this works on localhost. For production, add your domain in Firebase Console → Authentication → Settings → Authorized domains.',
+          'auth/operation-not-allowed': 'Google sign-in is not enabled. Please enable it in Firebase Console → Authentication → Sign-in method.',
+          'auth/admin-restricted-operation': 'Google sign-in is restricted. Check Firebase Console authentication settings.',
+          'auth/network-request-failed': 'Network error during sign-in. Check your connection and try again.',
+          'auth/internal-error': 'An internal error occurred. Please try again later.',
+        };
+        const msg = errorMessages[e.code] || ('Google sign-in failed: ' + (e.message || 'Unknown error'));
+        showToast(msg);
+
+        if (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request') {
+          showToast('Redirecting to Google sign-in...');
+          setTimeout(() => {
+            signInWithRedirect(auth, googleProvider).catch(err => {
+              console.error('Google redirect error:', err);
+              showToast('Could not start Google sign-in: ' + err.message);
+            });
+          }, 1500);
+        }
+      }
+
+      getRedirectResult(auth).then((result) => {
+        if (result && result.user) {
+          const name = result.user.displayName || 'Player';
+          const photo = result.user.photoURL || AVATARS[Math.floor(Math.random() * AVATARS.length)];
+          ensureUserRecord(result.user, name, photo).catch(e => {
+            console.error('Redirect result error:', e);
+            showToast('Error completing sign-in: ' + e.message);
+          });
+        }
+      }).catch((e) => {
+        console.error('Redirect result error:', e);
+        handleGoogleAuthError(e);
+      });
 
       async function ensureUserRecord(user, displayName, photoURL) {
         const userRef = ref(db, 'users/' + user.uid);
