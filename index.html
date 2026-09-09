@@ -82,7 +82,10 @@
       html.light .text-gray-400 { color: #666 !important; }
       html.light .border-purple-500\/20 { border-color: #A855F7 !important; }
     </style>
-  </head>
+    <meta property="og:image" content="https://bolt.new/static/og_default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
+</head>
   <body class="bg-cyber text-white min-h-screen">
     <div id="app">
       <!-- ============ LOGIN MODAL ============ -->
@@ -529,6 +532,7 @@
       // ============================================================
       let currentUser = null;
       let userProfile = null;
+      let isLocalGuest = false;
       let currentRoom = null;
       let roomListener = null;
       let matchListener = null;
@@ -571,8 +575,39 @@
           await updateProfile(cred.user, { displayName: nickname, photoURL: selectedAvatar });
           await ensureUserRecord(cred.user, nickname, selectedAvatar);
         } catch (e) {
-          showToast('Auth error: ' + e.message);
+          if (e.code === 'auth/admin-restricted-operation') {
+            startLocalGuest(nickname);
+          } else {
+            showToast('Auth error: ' + e.message);
+          }
         }
+      }
+
+      function startLocalGuest(nickname) {
+        isLocalGuest = true;
+        const saved = JSON.parse(localStorage.getItem('kei_localGuest') || 'null');
+        const profile = saved || {
+          displayName: nickname,
+          email: '',
+          photoURL: selectedAvatar,
+          eloRating: 1200,
+          stats: {
+            pauliBest: 0,
+            reflexBest: 99999,
+            memoryBest: 0,
+            typingBest: 0,
+            gamesPlayed: 0,
+            wins: 0,
+            losses: 0
+          }
+        };
+        profile.displayName = nickname;
+        profile.photoURL = saved?.photoURL || selectedAvatar;
+        localStorage.setItem('kei_localGuest', JSON.stringify(profile));
+        currentUser = { uid: 'local-guest' };
+        userProfile = profile;
+        initAppForUser(true);
+        showToast('Playing locally as a guest. Sign in with Google for multiplayer.');
       }
 
       async function signInGoogle() {
@@ -615,7 +650,7 @@
         if (user) {
           currentUser = user;
           initAppForUser();
-        } else {
+        } else if (!isLocalGuest) {
           currentUser = null;
           userProfile = null;
           document.getElementById('loginModal').classList.remove('hidden');
@@ -626,15 +661,18 @@
         }
       });
 
-      async function initAppForUser() {
-        const userRef = ref(db, 'users/' + currentUser.uid);
-        const snap = await get(userRef);
-        if (snap.exists()) {
-          userProfile = snap.val();
-        } else {
-          const name = currentUser.displayName || 'Player';
-          const photo = currentUser.photoURL || AVATARS[Math.floor(Math.random() * AVATARS.length)];
-          await ensureUserRecord(currentUser, name, photo);
+      async function initAppForUser(localOnly = false) {
+        isLocalGuest = localOnly;
+        if (!localOnly) {
+          const userRef = ref(db, 'users/' + currentUser.uid);
+          const snap = await get(userRef);
+          if (snap.exists()) {
+            userProfile = snap.val();
+          } else {
+            const name = currentUser.displayName || 'Player';
+            const photo = currentUser.photoURL || AVATARS[Math.floor(Math.random() * AVATARS.length)];
+            await ensureUserRecord(currentUser, name, photo);
+          }
         }
         document.getElementById('loginModal').classList.add('hidden');
         document.getElementById('loginModal').classList.remove('flex');
@@ -717,7 +755,11 @@
         }
         s.gamesPlayed = (s.gamesPlayed || 0) + 1;
         userProfile.stats = s;
-        await update(ref(db, 'users/' + currentUser.uid), { stats: s });
+        if (isLocalGuest) {
+          localStorage.setItem('kei_localGuest', JSON.stringify(userProfile));
+        } else {
+          await update(ref(db, 'users/' + currentUser.uid), { stats: s });
+        }
         updateStatsGrid();
       }
 
@@ -1257,6 +1299,10 @@
       // MULTIPLAYER: ROOMS & MATCHMAKING
       // ============================================================
       window.createRoom = async function() {
+        if (isLocalGuest) {
+          showToast('Sign in with Google to use multiplayer.');
+          return;
+        }
         if (!currentUser) return;
         const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
         currentRoom = roomCode;
@@ -1284,6 +1330,10 @@
       };
 
       window.joinRoom = async function() {
+        if (isLocalGuest) {
+          showToast('Sign in with Google to use multiplayer.');
+          return;
+        }
         const code = document.getElementById('roomCodeInput').value.trim();
         if (!code || !currentUser) return;
         const roomRef = ref(db, 'rooms/' + code);
@@ -1417,6 +1467,10 @@
 
       // Quick Match
       window.findMatch = async function() {
+        if (isLocalGuest) {
+          showToast('Sign in with Google to use multiplayer.');
+          return;
+        }
         if (!currentUser) return;
         document.getElementById('cancelMatchBtn').classList.remove('hidden');
         const queueRef = ref(db, 'matchmakingQueue');
